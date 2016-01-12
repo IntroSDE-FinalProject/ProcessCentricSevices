@@ -33,7 +33,7 @@ public class PersonResource {
     Request request;
     int idPerson;
     private WebTarget service = null;
-    public static String mediaType = null;
+    private String mediaType = null;
 
 
     public PersonResource(UriInfo uriInfo, Request request,int id) {

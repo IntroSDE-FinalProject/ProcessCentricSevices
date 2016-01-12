@@ -38,16 +38,14 @@ public class CollectionResources {
     @Context
     Request request;
     
-    public static String uriServer = null;
-	public static String mediaType = null;
+    private static String uriServer = "https://ss-serene-hamlet-9690.herokuapp.com/sdelab"; //StorageService
+	private static String mediaType = MediaType.APPLICATION_JSON;
 
 	private Client client = null;
 	private WebTarget service = null;
 	private ClientConfig clientConfig = null;
 	
 	public CollectionResources() throws MalformedURLException{
-		uriServer = "https://ss-serene-hamlet-9690.herokuapp.com/sdelab"; //StorageService
-		mediaType = MediaType.APPLICATION_JSON;
 		clientConfig = new ClientConfig();
 		client = ClientBuilder.newClient(clientConfig);
 		service = client.target(getBaseURI(uriServer));
