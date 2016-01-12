@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="person" type="personType"/>
+	<xs:complexType name="personType">
+		<xs:sequence>
+			<xs:element name="idPerson" type="xs:integer"/>
+			<xs:element name="firstname" type="xs:string"/>
+			<xs:element name="lastname" type="xs:string"/>
+			<xs:element name="birthdate" type="xs:string"/>
+			<xs:element name="email" type="addressType" minOccurs="0"/>
+			<xs:element name="fiscalcode" type="xs:string" minOccurs="0"/>
+			<xs:element name="gender" type="genderType"/>
+			<xs:element name="Measurements" type="listMeasureType" minOccurs="0"/>
+			<xs:element name="doctor" type="doctorType" minOccurs="0" />
+			<xs:element name="Targets" type="listTargetType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="familyType">
+		<xs:sequence>
+			<xs:element name="idFamily" type="xs:integer"/>
+			<xs:element name="firstname" type="xs:string"/>
+			<xs:element name="lastname" type="xs:string"/>
+			<xs:element name="role" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="doctorType">
+		<xs:sequence>
+			<xs:element name="idDoctor" type="xs:integer"/>
+			<xs:element name="firstname" type="xs:string"/>
+			<xs:element name="lastname" type="xs:string"/>
+			<xs:element name="specialization" type="xs:string"/>
+			<xs:element name="city" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listMeasureType">
+		<xs:sequence>
+			<xs:element name="measure" type="measureType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="measureType">
+		<xs:sequence>
+			<xs:element name="idMeasure" type="xs:integer"/>
+			<xs:element name="measureDefinition" type="measureDefinitionType"/>
+			<xs:element name="value" type="xs:string"/>
+			<xs:element name="timestamp" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listTargetType">
+		<xs:sequence>
+			<xs:element name="target" type="targetType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="targetType">
+		<xs:sequence>
+			<xs:element name="idTarget" type="xs:integer"/>
+			<xs:element name="measureDefinition" type="measureDefinitionType" minOccurs="0"/>
+			<xs:element name="value" type="xs:int"/>
+			<xs:element name="startDateTarget" type="xs:string"/>
+			<xs:element name="endDateTarget" type="xs:string"/>
+			<xs:element name="conditionTarget" type="xs:string"/>
+			<xs:element name="achieved" type="xs:boolean"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="listReminderType">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="reminder" type="reminderType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reminderType">
+		<xs:sequence>
+			<xs:element name="idReminder" type="xs:integer"/>
+			<xs:element name="text" type="xs:string"/>
+			<xs:element name="createReminder" type="xs:string"/>
+			<xs:element name="expireReminder" type="xs:string"/>
+			<xs:element name="autocreate" type="xs:boolean"/>
+			<xs:element name="relevanceLevel" type="xs:integer"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="measureDefinitionType">
+		<xs:sequence>
+			<xs:element name="idMeasureDef" type="xs:integer"/>
+			<xs:element name="measureName" type="xs:string"/>
+			<xs:element name="measureType" type="xs:string" minOccurs="0"/>
+			<xs:element name="startValue" type="xs:string" minOccurs="0" />
+			<xs:element name="endValue" type="xs:string" minOccurs="0" />
+			<xs:element name="alarmLevel" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="addressType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[^@]+@[^\.]+\..+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="genderType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="M"/>
+			<xs:enumeration value="F"/>
+			<xs:enumeration value="unknown"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

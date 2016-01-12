@@ -21,3 +21,5 @@ ivy/
 WebContent/WEB-INF/lib
 *.log
 *.sqlite
+src/introsde/finalproject/rest/generated/
+
