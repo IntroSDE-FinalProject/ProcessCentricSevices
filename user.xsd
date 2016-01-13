@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	<xs:element name="person" type="personType"/>
+	<xs:element name="people" type="listPersonType"/>
+	<xs:complexType name="listPersonType">
+		<xs:sequence>
+			<xs:element name="person" type="personType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="personType">
 		<xs:sequence>
 			<xs:element name="idPerson" type="xs:integer"/>
@@ -64,7 +69,7 @@
 	</xs:complexType>
 	<xs:complexType name="listReminderType">
 		<xs:sequence>
-			<xs:element maxOccurs="unbounded" name="reminder" type="reminderType"/>
+			<xs:element name="reminder" type="reminderType" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="reminderType">
