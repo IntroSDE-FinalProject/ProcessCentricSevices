@@ -26,22 +26,44 @@ public class DoctorResource {
     UriInfo uriInfo;
     @Context
     Request request;
-    int idPerson;
-    private WebTarget service = null;
+    int idDoctor;
+    private WebTarget serviceBLS = null;
+	private WebTarget serviceSS = null;
     private String mediaType = null;
+    private String path = null;
 
 
-    public DoctorResource(UriInfo uriInfo, Request request,int id) {
+    public DoctorResource(UriInfo uriInfo, Request request,int id, String mediaType2) {
         this.uriInfo = uriInfo;
         this.request = request;
-        this.idPerson = id;
+        this.idDoctor = id;
+        this.path = "doctor/"+this.idDoctor;
     }
 
-    public DoctorResource(UriInfo uriInfo, Request request,int id, WebTarget service, String mediatype) {
+    public DoctorResource(UriInfo uriInfo, Request request,int id, WebTarget serviceBLS, WebTarget serviceSS, String mediatype) {
         this.uriInfo = uriInfo;
         this.request = request;
-        this.idPerson = id;
-        this.service = service;
+        this.idDoctor = id;
+        this.serviceBLS = serviceBLS;
+        this.serviceSS = serviceSS;
         this.mediaType = mediatype;
+        this.path = "doctor/"+this.idDoctor;
     }
+    
+    
+    /**
+     * II° Integration Logic: checkPatient(idUser)
+     * 		BLS getCurrentHealth()
+     * 		BLS checkVitalSigns()
+     * 		SS getMotiviationPhrase() (the phrase changes based on the result of checkVitalSigns)
+	 * 		BLS setReminder()
+     * @return
+     */
+    @GET
+   	@Path("/person/{personId}/")
+   	@Produces( MediaType.APPLICATION_JSON )
+   	public Response checkPatient(@PathParam("personId") String personId) {
+   		System.out.println("checkPatient: Start checking idPerson "+ personId +"...");
+   		return null;
+   	}
 }

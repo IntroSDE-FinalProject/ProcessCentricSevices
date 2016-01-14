@@ -38,17 +38,20 @@ public class CollectionResources {
     @Context
     Request request;
     
-    private static String uriServer = "https://ss-serene-hamlet-9690.herokuapp.com/sdelab"; //StorageService
+    private static String uriServerBLS = "https://bls-desolate-falls-2352.herokuapp.com/sdelab"; //BusinessLogicService
+    private static String uriServerSS =  "https://ss-serene-hamlet-9690.herokuapp.com/sdelab"; //StorageService
 	private static String mediaType = MediaType.APPLICATION_JSON;
 
 	private Client client = null;
-	private WebTarget service = null;
+	private WebTarget serviceBLS = null;
+	private WebTarget serviceSS = null;
 	private ClientConfig clientConfig = null;
 	
 	public CollectionResources() throws MalformedURLException{
 		clientConfig = new ClientConfig();
 		client = ClientBuilder.newClient(clientConfig);
-		service = client.target(getBaseURI(uriServer));
+		serviceBLS = client.target(getBaseURI(uriServerBLS));
+		serviceSS = client.target(getBaseURI(uriServerSS));
 	}
 	
 	private static URI getBaseURI(String uriServer) {
@@ -56,99 +59,21 @@ public class CollectionResources {
 	}
     
 	public void reloadUri(){
-		service = null;
-		service = client.target(getBaseURI(uriServer));
+		serviceBLS = null;
+		serviceBLS = client.target(getBaseURI(uriServerBLS));
+		serviceSS = client.target(getBaseURI(uriServerSS));
 	}
 	
 	//***********************Person***********************
 
 	 @Path("person/{personId}")
 	 public PersonResource getPerson(@PathParam("personId") int id) {
-		 return new PersonResource(uriInfo, request, id, service, mediaType);
+		 return new PersonResource(uriInfo, request, id, serviceBLS, serviceSS, mediaType);
 	 }
 	
 	 @Path("doctor/{doctorId}")
 	 public DoctorResource getDoctor(@PathParam("doctorId") int id) {
-		 return new DoctorResource(uriInfo, request, id, service, mediaType);
+		 return new DoctorResource(uriInfo, request, id, serviceBLS, serviceSS, mediaType);
 	 }
 	 
-//	@GET
-//	@Path("person")
-//	@Produces( MediaType.APPLICATION_JSON )
-//	public Response getPeopleList() {
-//		System.out.println("getPeopleList: Getting list of person...");
-//		return Response.ok(people.getPeopleList()).build();
-//	}
-//    
-//	@POST
-//	@Path("person")
-//	@Produces(MediaType.APPLICATION_JSON)
-//    @Consumes({MediaType.APPLICATION_JSON ,  MediaType.APPLICATION_XML})  
-//    public Response createPerson(Person person) throws IOException {
-//		System.out.println("New Person: "+person.getFirstname()+" "+person.getLastname());
-//        System.out.println("createPerson: Creating new person...");
-//        int id = this.people.createPerson(person);
-//        if(id == -1)
-//        	return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-//    				.entity("Error in LocalDatabaseService").build();
-//        else
-//        	return Response.status(Response.Status.CREATED).entity(id).build();
-//    }
-//	
-//	 /**
-//     * returns the number of people to get the total number of records
-//     * @return a string representing the number of people
-//     */
-//    @GET
-//    @Path("person/count")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public String getCount() {
-//        System.out.println("getCount: Getting count...");
-//        List<Person> people = this.people.getPeopleList();
-//        int count = people.size();
-//        return String.valueOf(count);
-//    }
-//    
-//    /** Defines that the next path parameter after the base url is
-//    * treated as a parameter and passed to the PersonResources
-//    * Allows to type http://localhost:599/base_url/1
-//    * 1 will be treaded as parameter todo and passed to PersonResource
-//    */
-//    @Path("person/{personId}")
-//    public PersonResource getPerson(@PathParam("personId") int id) {
-//        return new PersonResource(uriInfo, request, id, people);
-//    }
-//    
-//    //***********************Doctor***********************
-//    
-//    @POST
-//	@Path("doctor")
-//	@Produces(MediaType.APPLICATION_JSON)
-//    @Consumes({MediaType.APPLICATION_JSON ,  MediaType.APPLICATION_XML})  
-//    public Response createDoctor(Doctor doctor) throws IOException {
-//		System.out.println("New Doctor: "+doctor.getFirstname()+" "+doctor.getLastname());
-//        System.out.println("createDoctor: Creating new doctor...");
-//        int id = this.people.createDoctor(doctor);
-//        if(id == -1)
-//        	return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-//    				.entity("Error in LocalDatabaseService").build();
-//        else
-//        	return Response.status(Response.Status.CREATED).entity(id).build();
-//    }
-//    
-//    @Path("doctor/{doctorId}")
-//    public DoctorResource getDoctor(@PathParam("doctorId") int id) {
-//        return new DoctorResource(uriInfo, request, id, people);
-//    }
-//    
-//    //***********************MeasureDefinition***********************
-//    
-//    @GET
-//    @Path("measureDefinition")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List<MeasureDefinition> getMeasureDefinition() {
-//        System.out.println("getMeasureDefinition: Reading measure definitions...");
-//        List<MeasureDefinition> result = this.people.getMeasureDefinition();
-//        return result;
-//    }
 }
