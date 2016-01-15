@@ -27,6 +27,7 @@
 			<xs:element name="firstname" type="xs:string"/>
 			<xs:element name="lastname" type="xs:string"/>
 			<xs:element name="role" type="xs:string"/>
+			<xs:element name="person" type="personType"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="doctorType">

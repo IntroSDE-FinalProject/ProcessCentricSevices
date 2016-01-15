@@ -77,11 +77,11 @@ public class PersonResource {
 	@Path("/measure")
 	@Produces( MediaType.APPLICATION_JSON )
 	public Response insertNewMeasure(@QueryParam("measure") int measure, 
-    		@QueryParam("value") Double value) {
+    		@QueryParam("value") int value) {
 		System.out.println("insertNewMeasure: Starting for idPerson "+ this.idPerson +"...");
 		MeasureType m = setMeasure(measure, value);
-		//Boolean check = checkTarget(m);
-		String phrase = getPhrase(false);
+		Boolean check = checkTarget(m);
+		String phrase = getPhrase(check);
 		ListMeasureType currentHealth = getCurrentHealth();
 		NewMeasureResponseWrapper nmrw = createWrapper(phrase, currentHealth);
 		return Response.ok(nmrw).build();
@@ -109,17 +109,18 @@ public class PersonResource {
 	}
 
 	private String getMotivationPhrase() {
-		Response response = serviceBLS.path(path+"/motivation").request().accept(mediaType).get(Response.class);
+		Response response = serviceBLS.path(path+"/motivation").request().accept(MediaType.TEXT_PLAIN).get(Response.class);
 		System.out.println(response);
 		return response.readEntity(String.class);
 	}
 
 	private Boolean checkTarget(MeasureType m) {
-		// TODO Auto-generated method stub
-		return null;
+		Response response = serviceBLS.path(path+"/measure/"+m.getIdMeasure()+"/check").request().accept(mediaType).get(Response.class);
+		System.out.println(response);
+		return response.readEntity(Boolean.class);
 	}
 
-	private MeasureType setMeasure(int measure, Double value) {
+	private MeasureType setMeasure(int measure, int value) {
 		//retrieve measureDefinition corresponding to measure
 		Response response = serviceBLS.path("/measureDefinition").queryParam("measure", measure).request().accept(mediaType).get(Response.class);
 		System.out.println(response);

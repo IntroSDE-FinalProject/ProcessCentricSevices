@@ -128,7 +128,7 @@
     	<target name="generate"> <!--  depends="init" -->
     	    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask" classpathref="lib.path.id">
     	    </taskdef>
-    	    <xjc schema="user.xsd" destdir="${src.dir}" package="${xjc.package}" />
+    	    <xjc schema="xmlSchemaPCS.xsd" destdir="${src.dir}" package="${xjc.package}" />
     	</target>
     	
         <!-- Run the JUnit Tests -->
