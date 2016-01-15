@@ -1,5 +1,9 @@
 package introsde.finalproject.rest.pcs.resources;
 
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.ejb.LocalBean;
@@ -12,6 +16,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -19,8 +24,15 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.json.JSONObject;
+
+import com.mongodb.util.JSON;
+
+import introsde.finalproject.rest.generated.DoctorType;
 import introsde.finalproject.rest.generated.ListMeasureType;
+import introsde.finalproject.rest.generated.MeasureType;
 import introsde.finalproject.rest.generated.PersonType;
+import introsde.finalproject.rest.generated.ReminderType;
 
 @Stateless // only used if the the application is deployed in a Java EE container
 @LocalBean // only used if the the application is deployed in a Java EE container
@@ -54,8 +66,8 @@ public class DoctorResource {
     }
     
     
-    private String errorMessageSS(Exception e){
-    	return "{ \n \"error\" : \"Error in Process Centric Services, due to the exception: "+e+"\"}";
+    private String creationReminderError(Exception e){
+    	return "{ \n \"error\" : \"Error in Process Centric Services creating reminder due to the exception: "+e+"\"}";
     }
     
     
@@ -69,41 +81,158 @@ public class DoctorResource {
     }
 	
 	
-    /**
-     * II° Integration Logic: checkPatient(idUser)
-     * 		BLS getCurrentHealth()
-     * 		BLS checkVitalSigns()
-     * 		SS getMotiviationPhrase() (the phrase changes based on the result of checkVitalSigns)
+	/**
+	 * II° Integration Logic: checkPatient(idUser)
+	 * 		BLS getCurrentHealth()
+	 * 		BLS checkVitalSigns()
+	 * 		SS getMotiviationPhrase() (the phrase changes based on the result of checkVitalSigns)
 	 * 		BLS setReminder()
-     * @return
-     */
-    @GET
-   	@Path("/person/{personId}/")
-   	@Produces( MediaType.APPLICATION_JSON )
-   	public Response checkPatient(@PathParam("personId") String personId) {
-    	try{
-   		System.out.println("checkPatient: Start checking idPerson "+ personId +"...");
-   		String path = "person/"+personId;
-   		//Response response_getCurrentHealth = serviceBLS.path(path).request().accept(mediaType).get(Response.class);
+	 * @return
+	 */
+	@GET
+	@Path("/person/{personId}")
+	@Produces( MediaType.APPLICATION_JSON )
+	public Response checkPatient(@PathParam("personId") String personId) {
+
+		System.out.println("checkPatient: Start checking idPerson "+ personId +"...");
+		String path = "person/"+personId;
+		//Response response_getCurrentHealth = serviceBLS.path(path).request().accept(mediaType).get(Response.class);
 		//PersonType p = response_getCurrentHealth.readEntity(PersonType.class);
-		
+
 		Response response_currentHealth = serviceBLS.path(path+"/currentHealth").request().accept(mediaType).get(Response.class);
+		System.out.println("Response currentHealth: " + response_currentHealth);
 		ListMeasureType currentHealth = response_currentHealth.readEntity(ListMeasureType.class);
+		List<MeasureType> listMeasures = currentHealth.getMeasure();
 		
+		
+		
+		
+		/*
 		currentHealth.getMeasure();
+		List<MeasureType> listMeasures = currentHealth.getMeasure();
+		listMeasures.get(0).getIdMeasure();
+		listMeasures.get(0).getValue();
+		listMeasures.get(0).getMeasureDefinition().getEndValue();
+		listMeasures.get(0).getMeasureDefinition().getStartValue();
+		 */
+
+		if(!listMeasures.isEmpty()){
+
+			List<Boolean> z = new ArrayList<Boolean>();
+
+
+			JSONObject jsonCheck = new JSONObject();
+
+			int idMeasureDefinition;
+			int value;
+			int endValue;
+			int startValue;
+			int index;
+			String measure_name = "";
+			boolean min_good = false;
+			boolean max_good = false;
+			String min_message = "";
+			String max_message = "";
+
+
+
+			for(int b=0; b<listMeasures.size();b++){
+				idMeasureDefinition = listMeasures.get(b).getMeasureDefinition().getIdMeasureDef().intValue();
+
+				value =  Integer.parseInt(listMeasures.get(b).getValue());
+
+				endValue = Integer.parseInt(listMeasures.get(b).getMeasureDefinition().getEndValue());
+
+				startValue = Integer.parseInt(listMeasures.get(b).getMeasureDefinition().getStartValue());
+
+				String path_check = path+"/"+idMeasureDefinition+"/"+value+"/"+endValue+"/"+startValue;
+
+				Response response_checkVitalSigns = serviceBLS.path(path+"/currentHealth").request().accept(mediaType).get(Response.class);
+				z.add(response_checkVitalSigns.readEntity(Boolean.class));
+			}
+
+			for(int i=0; i<z.size(); i++){
+				if(z.get(i)){
+					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "OK");
+					jsonCheck.put("Value", listMeasures.get(i).getValue());
+				}else{
+					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "BAD");
+					jsonCheck.put("Value", listMeasures.get(i).getValue());
+					
+					
+					
+					String reminder_text = "The " + listMeasures.get(i).getMeasureDefinition().getMeasureName() + " is not good !!!";
+					
+					
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					Calendar cal_created = Calendar.getInstance();
+					//System.out.println(dateFormat.format(cal.getTime()));
+					String date_created = dateFormat.format(cal_created.getTime());
+					//System.out.println(date_created.getClass().getName());
+
+					int years = cal_created.get(Calendar.YEAR);
+					int days = cal_created.get(Calendar.DAY_OF_MONTH);
+					int month = cal_created.get(Calendar.MONTH);
+
+					//Calendar for expired date with the days setted to 5 days after respect to the creation
+					Calendar cal_expired =  cal_created;
+					//update a date
+					int days_expired = days+5;
+					cal_expired.set(years, month, days_expired);
+					String date_expired = dateFormat.format(cal_expired.getTime());
+
+					int relevance_value = 3;
+					BigInteger relevance = BigInteger.valueOf(relevance_value);
+
+					ReminderType quote_reminder = new ReminderType();
+					quote_reminder.setAutocreate(true);
+					quote_reminder.setCreateReminder(date_created);
+					quote_reminder.setExpireReminder(date_expired);
+					quote_reminder.setRelevanceLevel(relevance);
+					quote_reminder.setText(reminder_text);
+
+
+					System.out.println("Create reminder: " + quote_reminder.getCreateReminder());
+					System.out.println("Expire reminder: " + quote_reminder.getExpireReminder());
+					System.out.println("Relevance reminder: " + quote_reminder.getRelevanceLevel());
+					System.out.println("text reminder: " + quote_reminder.getText());
+					System.out.println("Object quote_reminder: " + quote_reminder.toString());
+
+					try{
+						System.out.println("insert New Reminder for person "+ personId);
+						Response response = serviceBLS.path("/reminder").request(mediaType)
+								.post(Entity.entity(quote_reminder, mediaType), Response.class);
+						System.out.println(response);
+						
+						if(response.getStatus() != 200){
+					    	System.out.println("BLS Error response.getStatus() != 200  ");
+					     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+									.entity(blsErrorMessage(response.toString())).build();
+					     }else{
+					    	 return Response.ok(response.toString()).build();
+					     }
+					    }catch(Exception e){
+					    	System.out.println("PCS Error catch creating post reminder response.getStatus() != 200  ");
+					    	return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+							.entity(errorMessage(e)).build();
+					    }
+					
+				}
+			}
+			return Response.ok(jsonCheck.toString()).build();
+		}else{
+			System.out.println("There are no measures for the personId: "+ personId);
+			JSONObject jsonCheckEmpty = new JSONObject();
+			jsonCheckEmpty.put("Response", "No measure saved for "+personId +" personId" );
+			return Response.ok(jsonCheckEmpty.toString()).build();
+		}
 		
-		return null;
-    	}catch(Exception e){
-    		return null;
-    	}
-		
-		
-   	}
-    
-    
-    
-    
-    
-    
-    
+	}
+
+	private Object errorMessage(Exception e) {
+		System.out.println("Error creating the reminder in PCS");
+		return e;
+	}
+
 }
+
