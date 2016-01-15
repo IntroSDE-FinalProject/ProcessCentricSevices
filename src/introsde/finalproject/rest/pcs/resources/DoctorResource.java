@@ -19,6 +19,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import introsde.finalproject.rest.generated.ListMeasureType;
+import introsde.finalproject.rest.generated.PersonType;
+
 @Stateless // only used if the the application is deployed in a Java EE container
 @LocalBean // only used if the the application is deployed in a Java EE container
 public class DoctorResource {
@@ -51,6 +54,21 @@ public class DoctorResource {
     }
     
     
+    private String errorMessageSS(Exception e){
+    	return "{ \n \"error\" : \"Error in Process Centric Services, due to the exception: "+e+"\"}";
+    }
+    
+    
+	private String blsErrorMessage(String e){
+    	return "{ \n \"error\" : \"Error in external throught SS, due to the exception: "+e+"\"}";
+    }
+    
+	
+	private String ssErrorMessage(String e){
+    	return "{ \n \"error\" : \"Error in external throught BLS, due to the exception: "+e+"\"}";
+    }
+	
+	
     /**
      * II° Integration Logic: checkPatient(idUser)
      * 		BLS getCurrentHealth()
@@ -63,7 +81,29 @@ public class DoctorResource {
    	@Path("/person/{personId}/")
    	@Produces( MediaType.APPLICATION_JSON )
    	public Response checkPatient(@PathParam("personId") String personId) {
+    	try{
    		System.out.println("checkPatient: Start checking idPerson "+ personId +"...");
-   		return null;
+   		String path = "person/"+personId;
+   		//Response response_getCurrentHealth = serviceBLS.path(path).request().accept(mediaType).get(Response.class);
+		//PersonType p = response_getCurrentHealth.readEntity(PersonType.class);
+		
+		Response response_currentHealth = serviceBLS.path(path+"/currentHealth").request().accept(mediaType).get(Response.class);
+		ListMeasureType currentHealth = response_currentHealth.readEntity(ListMeasureType.class);
+		
+		currentHealth.getMeasure();
+		
+		return null;
+    	}catch(Exception e){
+    		return null;
+    	}
+		
+		
    	}
+    
+    
+    
+    
+    
+    
+    
 }
