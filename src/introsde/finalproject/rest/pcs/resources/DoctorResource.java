@@ -166,8 +166,11 @@ public class DoctorResource {
 					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), value_measure);
 					System.out.println("Jsoncheck else z.get(i) : " + jsonCheck.toString());
 					
+					String motivation_path = "person/"+personId;
+					String motivation_phrase = getMotivationPhrase(motivation_path);
+					System.out.println("Phrase to add in the Reminder: " + motivation_phrase);
 					
-					String reminder_text = "The " + listMeasures.get(i).getMeasureDefinition().getMeasureName() + " is not good !!!";
+					String reminder_text = "The " + listMeasures.get(i).getMeasureDefinition().getMeasureName() + " is not good !!! - " + motivation_phrase;
 					
 					
 					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -190,12 +193,17 @@ public class DoctorResource {
 					int relevance_value = 3;
 					BigInteger relevance = BigInteger.valueOf(relevance_value);
 
+					
+					
+					
 					ReminderType quote_reminder = new ReminderType();
 					quote_reminder.setAutocreate(true);
 					quote_reminder.setCreateReminder(date_created);
 					quote_reminder.setExpireReminder(date_expired);
 					quote_reminder.setRelevanceLevel(relevance);
 					quote_reminder.setText(reminder_text);
+					
+					
 
 
 					System.out.println("Create reminder: " + quote_reminder.getCreateReminder());
@@ -241,6 +249,20 @@ public class DoctorResource {
 		System.out.println("Error creating the reminder in PCS");
 		return e;
 	}
+	
+	
+	/**
+	 * Returns a motivation phrase
+	 * Calls one time the BLS
+	 * @return String
+	 */
+	private String getMotivationPhrase(String path) {
+		Response response = serviceBLS.path(path+"/motivation").request().accept(MediaType.TEXT_PLAIN).get(Response.class);
+		System.out.println(response);
+		return response.readEntity(String.class);
+	}
+	
+	
 
 }
 
