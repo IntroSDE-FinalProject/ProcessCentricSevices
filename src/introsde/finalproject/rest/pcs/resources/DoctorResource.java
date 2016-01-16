@@ -26,6 +26,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.mongodb.util.JSON;
 
 import introsde.finalproject.rest.generated.DoctorType;
@@ -155,13 +156,18 @@ public class DoctorResource {
 			}
 
 			for(int i=0; i<z.size(); i++){
+				JSONObject value_measure = new JSONObject();
 				if(z.get(i)){
-					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "OK");
-					jsonCheck.put("Value", listMeasures.get(i).getValue());
-				}else{
-					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "BAD");
-					jsonCheck.put("Value", listMeasures.get(i).getValue());
+					value_measure.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "OK");
+					value_measure.put("Value", listMeasures.get(i).getValue());
+					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), value_measure);
 					
+					System.out.println("Jsoncheck in z.get(i): " + jsonCheck.toString());
+				}else{
+					value_measure.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), "BAD");
+					value_measure.put("Value", listMeasures.get(i).getValue());
+					jsonCheck.put(listMeasures.get(i).getMeasureDefinition().getMeasureName(), value_measure);
+					System.out.println("Jsoncheck else z.get(i) : " + jsonCheck.toString());
 					
 					
 					String reminder_text = "The " + listMeasures.get(i).getMeasureDefinition().getMeasureName() + " is not good !!!";
@@ -207,12 +213,13 @@ public class DoctorResource {
 								.post(Entity.entity(quote_reminder, mediaType), Response.class);
 						System.out.println(response);
 						
-						if(response.getStatus() != 201){
+						if(response.getStatus() != 200){
 					    	System.out.println("BLS Error response.getStatus() != 200  ");
 					     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 									.entity(blsErrorMessage(response.toString())).build();
 					     }else{
-					    	 return Response.ok(response.toString()).build();
+					    	 String x = response.readEntity(String.class);
+					    	 Response.ok(x).build();
 					     }
 					    }catch(Exception e){
 					    	System.out.println("PCS Error catch creating post reminder response.getStatus() != 200  ");
@@ -222,6 +229,7 @@ public class DoctorResource {
 					
 				}
 			}
+			System.out.println("Jsoncheck return: " + jsonCheck.toString());
 			return Response.ok(jsonCheck.toString()).build();
 		}else{
 			System.out.println("There are no measures for the personId: "+ personId);
