@@ -106,7 +106,6 @@ public class DoctorResource {
 		
 		
 		
-		
 		/*
 		currentHealth.getMeasure();
 		List<MeasureType> listMeasures = currentHealth.getMeasure();
@@ -119,6 +118,8 @@ public class DoctorResource {
 		if(!listMeasures.isEmpty()){
 
 			List<Boolean> z = new ArrayList<Boolean>();
+			
+			System.out.println("In !listMeasures.isEmpty() , value: " + !listMeasures.isEmpty());
 
 
 			JSONObject jsonCheck = new JSONObject();
@@ -145,10 +146,12 @@ public class DoctorResource {
 
 				startValue = Integer.parseInt(listMeasures.get(b).getMeasureDefinition().getStartValue());
 
-				String path_check = path+"/"+idMeasureDefinition+"/"+value+"/"+endValue+"/"+startValue;
+				String path_check = "person/"+personId+"/check/"+idMeasureDefinition+"/"+value+"/"+endValue+"/"+startValue;
+				
 
-				Response response_checkVitalSigns = serviceBLS.path(path+"/currentHealth").request().accept(mediaType).get(Response.class);
+				Response response_checkVitalSigns = serviceBLS.path(path_check).request().accept(mediaType).get(Response.class);
 				z.add(response_checkVitalSigns.readEntity(Boolean.class));
+				System.out.println("Response checkVitalSigns: " + response_checkVitalSigns);
 			}
 
 			for(int i=0; i<z.size(); i++){
@@ -200,11 +203,11 @@ public class DoctorResource {
 
 					try{
 						System.out.println("insert New Reminder for person "+ personId);
-						Response response = serviceBLS.path("/reminder").request(mediaType)
+						Response response = serviceBLS.path("person/"+personId+"/reminder").request(mediaType)
 								.post(Entity.entity(quote_reminder, mediaType), Response.class);
 						System.out.println(response);
 						
-						if(response.getStatus() != 200){
+						if(response.getStatus() != 201){
 					    	System.out.println("BLS Error response.getStatus() != 200  ");
 					     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 									.entity(blsErrorMessage(response.toString())).build();
