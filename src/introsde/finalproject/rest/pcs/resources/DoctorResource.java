@@ -8,11 +8,7 @@ import java.util.List;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -26,12 +22,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.json.JSONObject;
 
-import com.mongodb.util.JSON;
-
-import introsde.finalproject.rest.generated.DoctorType;
 import introsde.finalproject.rest.generated.ListMeasureType;
 import introsde.finalproject.rest.generated.MeasureType;
-import introsde.finalproject.rest.generated.PersonType;
 import introsde.finalproject.rest.generated.ReminderType;
 
 @Stateless // only used if the the application is deployed in a Java EE container

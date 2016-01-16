@@ -3,18 +3,10 @@ package introsde.finalproject.rest.pcs.resources;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Entity;
@@ -28,7 +20,6 @@ import javax.ws.rs.core.UriInfo;
 import introsde.finalproject.rest.generated.ListMeasureType;
 import introsde.finalproject.rest.generated.MeasureDefinitionType;
 import introsde.finalproject.rest.generated.MeasureType;
-import introsde.finalproject.rest.generated.PersonType;
 import introsde.finalproject.rest.pcs.wrapper.NewMeasureResponseWrapper;
 
 /**
@@ -65,35 +56,59 @@ public class PersonResource {
         this.path = "person/"+this.idPerson;
     }
     
+    private String errorMessage(Exception e){
+    	return "{ \n \"error\" : \"Error in PCS, due to the exception: "+e+"\"}";
+    }
+    
     /**
      * I° Integration Logic: insertNewMeasure(idUser, measureName, value)
      * 		SS setMeasure(idUser, measureName, Value) (save new Measure in the Database)
      * 		BLS checkTarget(Measure) (check if the new Measure satisfies a target)
      * 		SS getMotivationPhrase()
      * 		BLS getCurrentHealth() (send list of measures to the client)
-     * @return
+     *
      */
     @GET
-	@Path("/measure")
-	@Produces( MediaType.APPLICATION_JSON )
-	public Response insertNewMeasure(@QueryParam("measure") int measure, 
+    @Path("/measure")
+    @Produces( MediaType.APPLICATION_JSON )
+    public Response insertNewMeasure(@QueryParam("measure") int measure, 
     		@QueryParam("value") int value) {
-		System.out.println("insertNewMeasure: Starting for idPerson "+ this.idPerson +"...");
-		MeasureType m = setMeasure(measure, value);
-		Boolean check = checkTarget(m);
-		String phrase = getPhrase(check);
-		ListMeasureType currentHealth = getCurrentHealth();
-		NewMeasureResponseWrapper nmrw = createWrapper(phrase, currentHealth);
-		return Response.ok(nmrw).build();
-	}
-
+    	try{
+    		System.out.println("insertNewMeasure: Starting for idPerson "+ this.idPerson +"...");
+    		MeasureType m = setMeasure(measure, value);
+    		Boolean check = checkTarget(m);
+    		String phrase = getPhrase(check);
+    		ListMeasureType currentHealth = getCurrentHealth();
+    		NewMeasureResponseWrapper nmrw = createWrapper(phrase, currentHealth);
+    		return Response.ok(nmrw).build();
+    		
+    	}catch(Exception e){
+    		System.out.println("PCS Error catch creating post reminder response.getStatus() != 200  ");
+    		return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+    				.entity(errorMessage(e)).build();
+    	}
+    }
+    
+    /**
+     * Create an object of type NewMeasureResponseWrapper
+     * This wrapper is used to put together the currentHealth and the
+     * motivation phrase to send to the client
+     * @param phrase String
+     * @param currentHealth ListMeasureType
+     * @return NewMeasureResponseWrapper
+     */
 	private NewMeasureResponseWrapper createWrapper(String phrase, ListMeasureType currentHealth) {
 		NewMeasureResponseWrapper n = new NewMeasureResponseWrapper();
 		n.setMeasure(currentHealth);
 		n.setPhrase(phrase);
 		return n;
 	}
-
+	
+	/**
+	 * 
+	 * @param check Boolean
+	 * @return String a motivation phrase
+	 */
 	private String getPhrase(Boolean check) {
 		if (check == true) {
 			return "Very good, you achieved a new target!!! :)";
@@ -101,25 +116,49 @@ public class PersonResource {
 			return getMotivationPhrase();
 		}
 	}
-
+	
+	/**
+	 * Calls BLS
+	 * @return ListMeasureType
+	 */
 	private ListMeasureType getCurrentHealth() {
 		Response response = serviceBLS.path(path+"/currentHealth").request().accept(mediaType).get(Response.class);
 		System.out.println(response);
 		return response.readEntity(ListMeasureType.class);
 	}
-
+	
+	/**
+	 * Returns a motivation phrase
+	 * Calls one time the BLS
+	 * @return String
+	 */
 	private String getMotivationPhrase() {
 		Response response = serviceBLS.path(path+"/motivation").request().accept(MediaType.TEXT_PLAIN).get(Response.class);
 		System.out.println(response);
 		return response.readEntity(String.class);
 	}
-
+	
+	/**
+	 * Checks if the target is achieved for the measure passed as parameter
+	 * Calls one time the BLS
+	 * @param m MeasureType
+	 * @return Boolean true if a target is achieved, false otherwise
+	 */
 	private Boolean checkTarget(MeasureType m) {
 		Response response = serviceBLS.path(path+"/measure/"+m.getIdMeasure()+"/check").request().accept(mediaType).get(Response.class);
 		System.out.println(response);
 		return response.readEntity(Boolean.class);
 	}
-
+	
+	/**
+	 * This method creates a new measure object given an integer,
+	 * corresponding to the id of a measure definition, and the value of the new measure.
+	 * The new measure is sent to the Storage Service.
+	 * This method calls two times the BLS and one time the SS
+	 * @param measure int
+	 * @param value int
+	 * @return MeasureType The new measure
+	 */
 	private MeasureType setMeasure(int measure, int value) {
 		//retrieve measureDefinition corresponding to measure
 		Response response = serviceBLS.path("/measureDefinition").queryParam("measure", measure).request().accept(mediaType).get(Response.class);
