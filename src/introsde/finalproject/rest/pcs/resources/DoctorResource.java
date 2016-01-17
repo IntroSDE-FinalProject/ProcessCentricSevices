@@ -206,7 +206,7 @@ public class DoctorResource {
 
 					try{
 						System.out.println("insert New Reminder for person "+ personId);
-						Response response = serviceBLS.path("person/"+personId+"/reminder").request(mediaType)
+						Response response = serviceBLS.path("person/"+personId+"/reminder").request( MediaType.TEXT_PLAIN)
 								.post(Entity.entity(quote_reminder, mediaType), Response.class);
 						System.out.println(response);
 						
