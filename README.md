@@ -2,7 +2,7 @@
 
 The Process Centric Service is a REST web service.  This layer receives requests from User Interface and redirects them to [Business Logic Service](https://github.com/introsde-2015-FinalProject/BusinessLogicServices) or to [Storage Service](https://github.com/introsde-2015-FinalProject/StorageServices).
 
-[API Documentation (apiary)](http://docs.processcentricservice.apiary.io/#)
+[API Documentation (apiary)](http://docs.processcentricservice.apiary.io/#)  
 [URL of the server (heroku)](https://pcs-nameless-cove-5229.herokuapp.com/sdelab/)
 
 ### Install
